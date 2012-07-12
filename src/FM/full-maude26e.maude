@@ -6823,7 +6823,7 @@ fmod EXT-DECL is
 *** extended attribute declarations 
   op strat : IntList -> Attr [ditto] .   *** to handle on-demand strategies
   op ditto : -> Attr [ctor] .
-
+  
   op _in_ : Attr AttrSet -> Bool .
   eq At in At AtS = true .
   eq At in AtS = false [owise] .

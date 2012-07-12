@@ -1,5 +1,5 @@
 
-----                                                     To be run on Maude 2.6
+----                                                   To be run on Maude 2.6.1
 ----                                                    author: Francisco Duran
 ----                           printSyntaxError functionality by Peter Olveczky
 ----                                       narrowing search by Santiago Escobar
@@ -11,7 +11,7 @@ set show advisories off .
 fmod BANNER is 
   pr STRING .
   op banner : -> String .
-  eq banner = "Full Maude 2.6d March 13th 2012" .
+  eq banner = "Full Maude 2.6.1 July 7th 2012" .
 endfm
 
 ***(
@@ -35,6 +35,7 @@ endfm
 )
 
 ---- to do:
+---- - commands remove ids and remove non-handled ids
 ---- - continue .
 ---- - show search graph .
 ---- - show path <number> .
@@ -43,6 +44,9 @@ endfm
 
 ---- Main changes and bugs fixed:
 ----
+---- - July 7th, 2012
+----   - A bug in the removal of identity attributes has been fixed. A metadata("variant") 
+----     was expected in all equations to be used to generate the variants. 
 ---- - March 20th, 2012
 ----   - Core Maude views are now accessible from Full Maude. Full Maude do not require 
 ----     explicit sort maps any more.  
@@ -6806,8 +6810,6 @@ fmod EXT-DECL is
   var  RlS : RuleSet .
   var  MbS : MembAxSet .
   var  M : Module .
-
-  op variant : -> Attr [ctor] .
 
 *** subsort declarations error
   op subsortDeclError : QidList -> [SubsortDeclSet] [ctor format (r o)] .
@@ -18974,7 +18976,7 @@ fmod COMMAND-PROCESSING is
     if B := included('META-MODULE, getImports(getTopModule(ME, DB)), DB) .
 
   op acuCohComplete : SModule -> SModule . --- Defined later in module ACU-COHERENCE-COMPLETION
-  op removeIds : Module ~> Module . ---Defined later in module VARIANTS
+----  op removeIds : Module ~> Module . ---Defined later in module VARIANTS
 
   ceq procVariantUnify2(M, T =? T', D)
     = if X:[SubstitutionSet] :: SubstitutionSet
@@ -19269,15 +19271,16 @@ fmod MODULE-VARIANTS is
   sort VariantProcedure .
   ops narrowing ad-hoc : -> VariantProcedure .
   var  VP : VariantProcedure .
+  sort IdsToRemove .
+  ops all non-handled : -> IdsToRemove .
+  var Which : IdsToRemove .  
   
-  op removeIds : Module ~> Module . 
-  op removeIdsUnif : Module ~> Module . 
+  op removeIds : Module IdsToRemove ~> Module . 
   ---- given a module returns an equivalent module without ids but with variants of eqs and rls
-  ---- the first one removes all id attributes, the second one only those not directly handled by Maude's unification
-  op removeIds : Module VariantProcedure ~> Module . 
-  op removeIdsUnif : Module VariantProcedure ~> Module . 
+  ---- the second argument may be either all (all id attributes are removed) or non-handled (only those not directly handled by Maude's unification are removed)
+  op removeIds : Module IdsToRemove VariantProcedure ~> Module . 
   ---- given a module returns an equivalent module without ids but with variants 
-  ---- of eqs and rls using using the specified procedure for calculating variants
+  ---- of eqs and rls using the specified procedure for calculating variants
   op getVariants : Module Module RuleSet VariantProcedure -> RuleSet .
   ---- given a (\widehat{\Sigma}, B, \widetilde{U}) returns the variants of the given set of rules
   ---- It takes the modules without and with ids. The module with id attributes is used to normalize.
@@ -19293,7 +19296,7 @@ fmod MODULE-VARIANTS is
   ---- given the variants of a tuple < LHS, target terms in condition >, a RHS, a condition, and an attribute set,
   ---- it constructs the corresponding variant equations
   
-  eq removeIds(M) 
+  eq removeIds(M, Which) ---- Which may be either all or non-handled 
     = if nonValidAttrs(getOps(M), owise idem iter)
       then unitError('The 'module 'uses 'non-supported 'attributes '`(owise`, 'idem`, 'or 'iter '`). '\n)
       else if singleVbleInLHSs(getRls(M))
@@ -19301,57 +19304,34 @@ fmod MODULE-VARIANTS is
            else if singleVbleInLHSs(getEqs(M))
                 then unitError('The 'module 'contains 'equations 'with 'single 'variables 'in 'their 'left-hand 'sides. '\n)
                 else if assocWithoutComm(getOps(M))
-                     then moreGeneralEqs(moreGeneralRls(removeIds(M, ad-hoc))) 
-                     else moreGeneralEqs(moreGeneralRls(removeIds(M, narrowing)))
-                     fi 
-                fi
-           fi
-      fi .
-  eq removeIdsUnif(M) 
-    = if nonValidAttrs(getOps(M), owise idem iter)
-      then unitError('The 'module 'uses 'non-supported 'attributes '`(owise`, 'idem`, 'or 'iter '`). '\n)
-      else if singleVbleInLHSs(getRls(M))
-           then unitError('The 'module 'contains 'rules 'with 'single 'variables 'in 'their 'left-hand 'sides. '\n)
-           else if singleVbleInLHSs(getEqs(M))
-                then unitError('The 'module 'contains 'equations 'with 'single 'variables 'in 'their 'left-hand 'sides. '\n)
-                else if assocWithoutComm(getOps(M))
-                     then moreGeneralEqs(moreGeneralRls(removeIdsUnif(M, ad-hoc))) 
-                     else moreGeneralEqs(moreGeneralRls(removeIdsUnif(M, narrowing)))
+                     then moreGeneralEqs(moreGeneralRls(removeIds(M, Which, ad-hoc))) 
+                     else moreGeneralEqs(moreGeneralRls(removeIds(M, Which, narrowing))) ---- built-in
                      fi 
                 fi
            fi
       fi .
   
-  eq removeIds(M, VP) 
+  eq removeIds(M, Which, VP) 
     ---- the narrowing based getVariant function requires a module with id attributes turned into eqs 
     ---- and sort Tuple and tuple operators in; the ad-hoc getVariant (FroCos th 2) only needs the 
     ---- tuple declarations.
     = setRls(
         addEqs(
-          getVariants(makeIdsTuplingModule(M), addTupling(M, M), getEqs(M), VP),
-          makeIdsModule(M)),
-        getVariants(makeIdsTuplingModule(M), addTupling(M, M), getRls(M), VP)) .
-  eq removeIdsUnif(M, VP) 
-    ---- the narrowing based getVariant function requires a module with id attributes turned into eqs 
-    ---- and sort Tuple and tuple operators in; the ad-hoc getVariant (FroCos th 2) only needs the 
-    ---- tuple declarations.
-    = setRls(
-        addEqs(
-          getVariants(makeIdsTuplingModuleUnif(M), addTupling(M, M), getEqs(M), VP),
-          makeIdsModuleUnif(M)),
-        getVariants(makeIdsTuplingModuleUnif(M), addTupling(M, M), getRls(M), VP)) .
+          getVariants(makeIdsTuplingModule(M, Which), addTupling(M, M), getEqs(M), VP),
+          makeIdsModule(M, Which)),
+        getVariants(makeIdsTuplingModule(M, Which), addTupling(M, M), getRls(M), VP)) .
   
   eq getVariants(M, M', Rl RlS, VP) 
-    = getRlVariants(M', getVariants(M, M', makeTuple(lhs(Rl), cond(Rl)), VP), rhs(Rl), cond(Rl), atts(Rl)) 
+    = getRlVariants(M', getVariants#(M, M', makeTuple(lhs(Rl), cond(Rl)), VP), rhs(Rl), cond(Rl), atts(Rl)) 
       getVariants(M, M', RlS, VP) .
   eq getVariants(M, M', (none).RuleSet, VP) = none .
     
   eq getVariants(M, M', Eq EqS, VP) 
-    = getEqVariants(M', getVariants(M, M', makeTuple(lhs(Eq), cond(Eq)), VP), rhs(Eq), cond(Eq), atts(Eq)) 
+    = getEqVariants(M', getVariants#(M, M', makeTuple(lhs(Eq), cond(Eq)), VP), rhs(Eq), cond(Eq), atts(Eq)) 
       getVariants(M, M', EqS, VP) .
   eq getVariants(M, M', (none).EquationSet, VP) = none .
     
-  eq getVariants(M, M', T, narrowing) = getVariants(M, T, 1, irreducible ACUUnify) .
+  eq getVariants#(M, M', T, narrowing) = getVariants(M, T, 1, irreducible ACUUnify) .
   
   eq getRlVariants(M, {'<_>[T], Subst, Subst', N} | VFS, T', nil, AtS)
     = (rl getTerm(metaNormalize(M, T)) => getTerm(metaNormalize(M, _<<_(T', Subst))) [AtS] .)
@@ -19398,158 +19378,96 @@ fmod MODULE-VARIANTS is
   ------------------------------------------------------------------------------
   ---- makeIdsTuplingModule((\Sigma, E, R)) computes (\widehat{\Sigma}, B, \widetilde{U})
   ------------------------------------------------------------------------------
-  op makeIdsTuplingModule : Module -> Module .
-  op makeIdsTuplingModuleUnif : Module -> Module .
-  op makeIdsModule : Module -> Module .
-  op makeIdsModuleUnif : Module -> Module .
+  op makeIdsTuplingModule : Module IdsToRemove -> Module .
+  op makeIdsModule : Module IdsToRemove -> Module .
   op addTupling : Module Module -> Module . 
   ---- addTupling is called after makeIdsModule, which removes the eqs in it
   ---- the first module is the oiginal one, with the original eqs and rls
   
-  eq makeIdsTuplingModuleUnif(M) = addTupling(M, makeIdsModuleUnif(M)) .
-  eq makeIdsTuplingModule(M) = addTupling(M, makeIdsModule(M)) .
+  eq makeIdsTuplingModule(M, Which) = addTupling(M, makeIdsModule(M, Which)) .
   
-  eq makeIdsModule(M) 
+  eq makeIdsModule(M, Which) 
     = setEqs(
         setOps(
           setRls(M, none),
-          removeIds(getOps(M))),
-        idEqsUnif(M, getOps(M))) .
-  eq makeIdsModuleUnif(M) 
-    = setEqs(
-        setOps(
-          setRls(M, none),
-          removeIdsUnif(getOps(M))),
-        idEqsUnif(M, getOps(M))) .
+          removeIds(getOps(M), Which)),
+        idEqs(M, getOps(M), Which)) .
   
   eq addTupling(M, M') 
     = addOps(
         tuplingOps(M, getEqs(M), getRls(M)),
         addSorts('Tuple, M')) .
   
-  op idEqs : Module OpDeclSet -> EquationSet .
-  eq idEqs(M, op F : Tp Tp' -> Tp'' [left-id(T) AtS] . ODS)
-    = (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('lIdEq1)] .)
-----    = (eq F[T, qid("X:" + string(type2qid(Tp)))] = qid("X:" + string(type2qid(Tp))) [label('lIdEq1)] .)
+  op idEqs : Module OpDeclSet IdsToRemove -> EquationSet .
+  ---- the 3rd arguments indicates whether all the id attributes are to be removed (all), or only those not handled by the Maude unification algorithm (non-handled)
+  eq idEqs(M, op F : Tp Tp' -> Tp'' [left-id(T) AtS] . ODS, Which)
+    = (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('lIdEq1) 
       if assoc in AtS and not comm in AtS 
       then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-----      then (eq F[qid("X:" + string(type2qid(Tp))), F[T, qid("Y:" + string(type2qid(Tp)))]] 
-----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-              [label('lIdEq2)] .)
+              [metadata("variant")] .) ---- label('lIdEq2) 
       else none 
       fi
-      idEqs(M, ODS) . 
-  eq idEqs(M, op F : Tp Tp' -> Tp'' [right-id(T) AtS] . ODS)
-    = (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('rIdEq1)] .)
-----    = (eq F[qid("X:" + string(type2qid(Tp))), T] = qid("X:" + string(type2qid(Tp))) [label('rIdEq1)] .)
+      idEqs(M, ODS, Which) . 
+  eq idEqs(M, op F : Tp Tp' -> Tp'' [right-id(T) AtS] . ODS, Which)
+    = (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('rIdEq1) 
       if assoc in AtS and not comm in AtS 
       then (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-----      then (eq F[F[qid("X:" + string(type2qid(Tp))), T], qid("Y:" + string(type2qid(Tp)))] 
-----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-              [label('rIdEq2)] .)
+              [metadata("variant")] .) ---- label('rIdEq2) 
       else none 
       fi
-      idEqs(M, ODS) . 
-  eq idEqs(M, op F : Tp Tp' -> Tp'' [id(T) AtS] . ODS)
+      idEqs(M, ODS, Which) . 
+  eq idEqs(M, op F : Tp Tp' -> Tp'' [id(T) AtS] . ODS, all)
     = if comm in AtS
-      then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('idEq1)] .)
-----      then (eq F[T, qid("X:" + string(type2qid(Tp)))] = qid("X:" + string(type2qid(Tp))) [label('idEq1)] .)
-      else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('idEq2)] .)
-----      else (eq F[qid("X:" + string(type2qid(Tp))), T] = qid("X:" + string(type2qid(Tp))) [label('idEq2)] .)
-           (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('idEq3)] .)
-----           (eq F[T, qid("X:" + string(type2qid(Tp)))] = qid("X:" + string(type2qid(Tp))) [label('idEq3)] .)
+      then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq1) 
+      else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq2) 
+           (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq3) 
       fi 
       if assoc in AtS and not comm in AtS 
       then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-----      then (eq F[qid("X:" + string(type2qid(Tp))), F[T, qid("Y:" + string(type2qid(Tp)))]] 
-----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-              [none] .)
+              [metadata("variant")] .)
            (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-----           (eq F[F[qid("X:" + string(type2qid(Tp))), T], qid("Y:" + string(type2qid(Tp)))] 
-----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-              [none] .)
+              [metadata("variant")] .)
       else none 
       fi
-      idEqs(M, ODS) . 
-  eq idEqs(M, ODS) = none [owise] . 
-
-  op idEqsUnif : Module OpDeclSet -> EquationSet .
-  eq idEqsUnif(M, op F : Tp Tp' -> Tp'' [left-id(T) AtS] . ODS)
-    = (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('lIdEq1)] .)
-----    = (eq F[T, qid("X:" + string(type2qid(Tp)))] = qid("X:" + string(type2qid(Tp))) [label('lIdEq1)] .)
-      if assoc in AtS and not comm in AtS 
-      then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
-              = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-----      then (eq F[qid("X:" + string(type2qid(Tp))), F[T, qid("Y:" + string(type2qid(Tp)))]] 
-----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-              [label('lIdEq2)] .)
-      else none 
-      fi
-      idEqsUnif(M, ODS) . 
-  eq idEqsUnif(M, op F : Tp Tp' -> Tp'' [right-id(T) AtS] . ODS)
-    = (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('rIdEq1)] .)
-----    = (eq F[qid("X:" + string(type2qid(Tp))), T] = qid("X:" + string(type2qid(Tp))) [label('rIdEq1)] .)
-      if assoc in AtS and not comm in AtS 
-      then (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-----      then (eq F[F[qid("X:" + string(type2qid(Tp))), T], qid("Y:" + string(type2qid(Tp)))] 
-----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-              [label('rIdEq2)] .)
-      else none 
-      fi
-      idEqsUnif(M, ODS) . 
-  eq idEqsUnif(M, op F : Tp Tp' -> Tp'' [id(T) AtS] . ODS)
+      idEqs(M, ODS, all) . 
+  eq idEqs(M, op F : Tp Tp' -> Tp'' [id(T) AtS] . ODS, non-handled)
     ---- modified on Jan 13th, 2011
     ---- The ACU case is now handled, the id attributes are left if also AC
     = if assoc in AtS and comm in AtS 
       then none 
       else if comm in AtS
-           then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('idEq1)] .)
-      ----      then (eq F[T, qid("X:" + string(type2qid(Tp)))] = qid("X:" + string(type2qid(Tp))) [label('idEq1)] .)
-           else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('idEq2)] .)
-      ----      else (eq F[qid("X:" + string(type2qid(Tp))), T] = qid("X:" + string(type2qid(Tp))) [label('idEq2)] .)
-                (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [label('idEq3)] .)
-      ----           (eq F[T, qid("X:" + string(type2qid(Tp)))] = qid("X:" + string(type2qid(Tp))) [label('idEq3)] .)
+           then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq1) 
+           else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq2) 
+                (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq3) 
            fi 
            if assoc in AtS and not comm in AtS 
            then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
                    = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-      ----      then (eq F[qid("X:" + string(type2qid(Tp))), F[T, qid("Y:" + string(type2qid(Tp)))]] 
-      ----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-                   [none] .)
+                   [metadata("variant")] .)
                 (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
                    = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-      ----           (eq F[F[qid("X:" + string(type2qid(Tp))), T], qid("Y:" + string(type2qid(Tp)))] 
-      ----              = F[qid("X:" + string(type2qid(Tp))), qid("Y:" + string(type2qid(Tp)))] 
-                   [none] .)
+                   [metadata("variant")] .)
            else none 
            fi
       fi
-      idEqsUnif(M, ODS) . 
-  eq idEqsUnif(M, ODS) = none [owise] . 
+      idEqs(M, ODS, non-handled) . 
+  eq idEqs(M, ODS, Which) = none [owise] . 
 
-  op removeIds : OpDeclSet -> OpDeclSet .
-  eq removeIds(op F : TpL -> Tp [id(T) AtS] . ODS)
-    = removeIds(op F : TpL -> Tp [AtS] . ODS) .
-  eq removeIds(op F : TpL -> Tp [left-id(T) AtS] . ODS)
-    = removeIds(op F : TpL -> Tp [AtS] . ODS) .
-  eq removeIds(op F : TpL -> Tp [right-id(T) AtS] . ODS)
-    = removeIds(op F : TpL -> Tp [AtS] . ODS) .
-  eq removeIds(ODS) = ODS [owise] .
-  
-  op removeIdsUnif : OpDeclSet -> OpDeclSet .
- ceq removeIdsUnif(op F : TpL -> Tp [id(T) AtS] . ODS)
-    = removeIdsUnif(op F : TpL -> Tp [AtS] . ODS) 
+  op removeIds : OpDeclSet IdsToRemove -> OpDeclSet .
+  eq removeIds(op F : TpL -> Tp [id(T) AtS] . ODS, all)
+    = removeIds(op F : TpL -> Tp [AtS] . ODS, all) .
+ ceq removeIds(op F : TpL -> Tp [id(T) AtS] . ODS, non-handled)
+    = removeIds(op F : TpL -> Tp [AtS] . ODS, non-handled) 
     if not (assoc in AtS and comm in AtS) .
-  eq removeIdsUnif(op F : TpL -> Tp [left-id(T) AtS] . ODS)
-    = removeIdsUnif(op F : TpL -> Tp [AtS] . ODS) .
-  eq removeIdsUnif(op F : TpL -> Tp [right-id(T) AtS] . ODS)
-    = removeIdsUnif(op F : TpL -> Tp [AtS] . ODS) .
-  eq removeIdsUnif(ODS) = ODS [owise] .
+  eq removeIds(op F : TpL -> Tp [left-id(T) AtS] . ODS, Which)
+    = removeIds(op F : TpL -> Tp [AtS] . ODS, Which) .
+  eq removeIds(op F : TpL -> Tp [right-id(T) AtS] . ODS, Which)
+    = removeIds(op F : TpL -> Tp [AtS] . ODS, Which) .
+  eq removeIds(ODS, Which) = ODS [owise] .
   
   op tuplingOps : Module EquationSet RuleSet -> OpDeclSet .
   op tuplingOps : Module EquationSet -> OpDeclSet .
@@ -19719,7 +19637,7 @@ fmod MODULE-VARIANTS is
                 = F[F[qid("X:" + Str:String), qid("Y:" + Str:String)], qid("Z:" + Str:String)] [label('assocEq)] .) 
     /\ $checkAEq(M, Eq) .
   eq $removeLonelyAssocs(M, none, OPDS', EqS) = addEqs(EqS, M) .
-  eq $removeLonelyAssocs(M, op F : TpL -> Tp [AtS] . OPDS, OPDS', EqS) = unitError('assoc 'attributes 'cannot 'be 'removed 'for F) .
+  eq $removeLonelyAssocs(M, op F : TpL -> Tp [AtS] . OPDS, OPDS', EqS) = unitError('assoc 'attributes 'cannot 'be 'removed 'for F) [owise] .
   
   eq $checkAEq(M, Eq) = $checkAEqAux(setRls(setEqs(M, none), rulify(Eq)), getEqs(M)) .
   
@@ -20617,7 +20535,26 @@ mod DATABASE-HANDLING is
     < O : X@DatabaseClass | db : DB, input : ('remove`identity`attributes_.[T]), output : nil, default : ME,   Atts >
     => < O : X@DatabaseClass | 
           db : DB', input : nilTermList, 
-          output : (eMetaPrettyPrint(getFlatModule(ME'', DB'), removeIds(getFlatModule(ME'', DB')))),
+          output : (eMetaPrettyPrint(getFlatModule(ME'', DB'), removeIds(getFlatModule(ME'', DB'), all))),
+          default : ME, Atts > 
+    if < DB' ; ME'' > := evalModExp(parseModExp(T), DB) .
+
+  eq 'rm`nh`ids`..@Command@ = 'remove`non-handled`identity`attributes`..@Command@ .
+  eq 'rm`nh`ids_.[T] = 'remove`non-handled`identity`attributes_.[T] .
+  
+  crl [remove-id-attributes] :
+    < O : X@DatabaseClass | db : DB, 
+       input : ('remove`non-handled`identity`attributes`..@Command@), 
+       output : nil, default : ME, Atts >
+    => < O : X@DatabaseClass | db : DB', input : nilTermList, 
+          output : (eMetaPrettyPrint(getFlatModule(ME', DB'), removeIds(getFlatModule(ME', DB'), non-handled))),
+          default : ME', Atts > 
+    if < DB' ; ME' > := evalModExp(ME, DB) .
+  crl [remove-id-attributes] :
+    < O : X@DatabaseClass | db : DB, input : ('remove`non-handled`identity`attributes_.[T]), output : nil, default : ME,   Atts >
+    => < O : X@DatabaseClass | 
+          db : DB', input : nilTermList, 
+          output : (eMetaPrettyPrint(getFlatModule(ME'', DB'), removeIds(getFlatModule(ME'', DB'), non-handled))),
           default : ME, Atts > 
     if < DB' ; ME'' > := evalModExp(parseModExp(T), DB) .
 

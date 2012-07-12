@@ -93,13 +93,13 @@ mod CONFIGURATION is
   op <> : -> Portal [ctor] .
 endm
 
-load FM/full-maude26e.maude
+load FM/full-maude261d.maude
 load ITP/itp.maude
 load CRChC/crchc3m.maude
 load MTT/mtt.maude
 load SCC/scc.maude
-load EqE/eqe.maude
-load ERTP/ertp.maude
+----load EqE/eqe.maude
+----load ERTP/ertp.maude
 
 *** 
 *** Maude Formal Environment
@@ -2922,6 +2922,7 @@ mod MFE-MTT is
        (to OS from O' : module getName(M) is terminating functional part B) .
 endm
 
+---(
 mod MFE-EqE is
   pr 3BOOL .
   pr DATABASE-HANDLING .
@@ -3076,7 +3077,9 @@ mod MFE-EqE is
   eq has==Aux((op '_==_ : 'Universal 'Universal -> 'Bool [AS]. ) OS) = true .
   eq has==Aux(OS) = false [owise] .
 endm
+---)
 
+---(
 --------------------------------------------------------------------------------
 ---- MFE-ERTP
 --------------------------------------------------------------------------------
@@ -3189,9 +3192,8 @@ mod MFE-ERTP is
     => < O : X@Controller | db : DB, Atts > 
        < O' : X@ERTPBroker | Atts' > 
        (to O'' from O' : output('Something 'should 'have 'been 'proved. '\n)) .
-
 endm
-
+---)
 
 
 --------------------------------------------------------------------------------
@@ -3210,8 +3212,8 @@ mod MFE is ---- MAUDE-FORMAL-ENVIRONMENT
   pr MFE-CRC .
   pr MFE-ChC .
   pr MFE-MTT .
-  pr MFE-EqE .
-  pr MFE-ERTP .
+----  pr MFE-EqE .
+----  pr MFE-ERTP .
   pr MFE-PUBLIC-MESSAGES .
   pr META-MFE-SIGN .
   subsort NeConstantSet < NeAtomicITPTermSet . ---- Added to avoid preregularity problems due 
@@ -3241,8 +3243,9 @@ mod MFE is ---- MAUDE-FORMAL-ENVIRONMENT
           init-itp(TOOLS)
           init-scc(TOOLS)
           init-mtt(TOOLS)
-          init-eqe(TOOLS)
-          init-ertp(TOOLS),
+----          init-eqe(TOOLS)
+----          init-ertp(TOOLS)
+          ,
          nil ] .
 
 endm
