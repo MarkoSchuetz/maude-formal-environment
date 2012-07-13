@@ -1,5 +1,5 @@
 
-----                                                   To be run on Maude 2.6.1
+----                                                  To be run on Maude 2.6.1e
 ----                                                    author: Francisco Duran
 ----                           printSyntaxError functionality by Peter Olveczky
 ----                                       narrowing search by Santiago Escobar
@@ -11,7 +11,7 @@ set show advisories off .
 fmod BANNER is 
   pr STRING .
   op banner : -> String .
-  eq banner = "Full Maude 2.6.1d July 7th 2012" .
+  eq banner = "Full Maude 2.6.1e July 13th 2012" .
 endfm
 
 ***(
@@ -34,6 +34,14 @@ endfm
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 )
 
+---- PD: pre alpha96
+fmod PRE-VARIANT is 
+  including META-LEVEL .
+  sort Variant .
+  op variant : -> Attr [ctor] . 
+  op {_,_,_} : Substitution Term Nat -> Variant [ctor] .
+endfm
+
 ---- to do:
 ---- - commands remove ids and remove non-handled ids
 ---- - continue .
@@ -46,7 +54,9 @@ endfm
 ----
 ---- - July 7th, 2012
 ----   - A bug in the removal of identity attributes has been fixed. A metadata("variant") 
-----     was expected in all equations to be used to generate the variants. 
+----     was expected in all equations to be used to generate the variants. To be consistent 
+----     to the new built-in getVariants function I'm using the attribute variant instead
+----     of the metadata. 
 ---- - March 20th, 2012
 ----   - Core Maude views are now accessible from Full Maude. Full Maude do not require 
 ----     explicit sort maps any more.  
@@ -334,7 +344,7 @@ set include TRUTH-VALUE off .
 *** by Santiago Escobar
 ***
 fmod UNIFICATIONTRIPLE is
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting INT .
 
   --- UnificationPair --------------------------------------------
@@ -365,7 +375,7 @@ endfm
 
 fmod TERM-HANDLING is
   protecting META-TERM .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting EXT-BOOL . *** For and-then
 
   var T T' T'' : Term .
@@ -544,7 +554,7 @@ endfm
 
 fmod SUBSTITUTION-HANDLING is
   protecting META-TERM .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting TERM-HANDLING .
 
   var S S' Subst Subst' : Substitution .
@@ -702,7 +712,7 @@ fmod SUBSTITUTION-HANDLING is
 endfm
 
 fmod TERMSET is
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting SUBSTITUTION-HANDLING .
 
   sort TermSet .
@@ -726,7 +736,7 @@ endfm
 
 fmod RENAMING is
   protecting META-TERM .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting TERM-HANDLING .
   protecting SUBSTITUTION-HANDLING .
   protecting TERMSET .
@@ -878,7 +888,7 @@ endfm
 
 fmod SUBSTITUTIONSET is
   protecting SUBSTITUTION-HANDLING .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting TERMSET .
   protecting RENAMING .
 
@@ -1202,11 +1212,11 @@ endfm
 
 fmod MODULE-HANDLING is
   protecting INT .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting EXT-BOOL . *** From Full Maude
   protecting SUBSTITUTION-HANDLING .
   protecting UNIFICATIONTRIPLESET .
-
+  
   var T T' T'' T1 T2 Lhs Rhs : Term .
   var C C' : Constant .
   var QIL : QidList .
@@ -1770,7 +1780,7 @@ fmod MODULE-HANDLING is
 
   op getEqsNoVariant : EquationSet -> EquationSet [memo] .
   eq getEqsNoVariant(none) = none .
-  eq getEqsNoVariant((eq Lhs = Rhs [AtS metadata("variant")] .) EqS)
+  eq getEqsNoVariant((eq Lhs = Rhs [AtS variant] .) EqS)
    = getEqsNoVariant(EqS) .
   eq getEqsNoVariant((eq Lhs = Rhs [AtS] .) EqS)
    = (eq Lhs = Rhs [AtS] .) getEqsNoVariant(EqS) 
@@ -1804,8 +1814,8 @@ fmod MODULE-HANDLING is
 
   op getEqsVariant : EquationSet -> EquationSet [memo] .
   eq getEqsVariant(none) = none .
-  eq getEqsVariant((eq Lhs = Rhs [AtS metadata("variant")] .) EqS)
-   = (eq Lhs = Rhs [AtS metadata("variant")] .)
+  eq getEqsVariant((eq Lhs = Rhs [AtS variant] .) EqS)
+   = (eq Lhs = Rhs [AtS variant] .)
      getEqsVariant(EqS) .
   eq getEqsVariant((eq Lhs = Rhs [AtS] .) EqS)
    = getEqsVariant(EqS) 
@@ -1951,8 +1961,8 @@ fmod MODULE-HANDLING is
 
   op getEqsVariant : EquationSet -> EquationSet [memo] .
   eq getEqsVariant(none) = none .
-  eq getEqsVariant((eq Lhs = Rhs [AtS metadata("variant")] .) EqS)
-   = (eq Lhs = Rhs [AtS metadata("variant")] .) getEqsVariant(EqS) .
+  eq getEqsVariant((eq Lhs = Rhs [AtS variant] .) EqS)
+   = (eq Lhs = Rhs [AtS variant] .) getEqsVariant(EqS) .
   eq getEqsVariant((eq Lhs = Rhs [AtS] .) EqS)
    = getEqsVariant(EqS) 
   [owise] .
@@ -2604,7 +2614,7 @@ fmod META-MINIMIZE-BINDINGS is
   pr SUBSTITUTIONSET .
   pr UNIFICATIONTRIPLESET .
   pr CONVERSION .
-  pr META-LEVEL .
+  pr META-LEVEL + PRE-VARIANT .
 
   vars M : Module .
   vars T T' T1 T2 T3 : Term .
@@ -2786,7 +2796,7 @@ endfm
 
 fmod RESULT-CONTEXT-SET is
   protecting META-TERM .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting TERM-HANDLING .
   protecting SUBSTITUTION-HANDLING .
   protecting RENAMING .
@@ -2960,7 +2970,7 @@ fmod META-MATCH is
   protecting TERM-HANDLING .
   protecting MODULE-HANDLING .
   protecting SUBSTITUTION-HANDLING .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting RENAMING .
   protecting SUBSTITUTIONSET .
 
@@ -3025,7 +3035,7 @@ fmod VARIANT is
   pr META-MINIMIZE-BINDINGS .
   pr RESULT-CONTEXT-SET .
   pr MODULE-HANDLING .
-  pr META-LEVEL .
+  pr META-LEVEL + PRE-VARIANT .
 
   var M : Module .
   vars T T' TS TS' CtTS CtTS' Lhs Rhs : Term .
@@ -3341,7 +3351,7 @@ fmod META-E-BASIC-UNIFICATION is
   pr META-MINIMIZE-BINDINGS .
   pr RESULT-CONTEXT-SET .
   pr MODULE-HANDLING .
-  pr META-LEVEL .
+  pr META-LEVEL + PRE-VARIANT .
   pr RIGIDIFE .
 
   *** Repeated definitions to avoid cross calls between modules ************
@@ -3435,7 +3445,7 @@ fmod META-E-UNIFICATION is
   pr META-MINIMIZE-BINDINGS .
   pr RESULT-CONTEXT-SET .
   pr MODULE-HANDLING .
-  pr META-LEVEL .
+  pr META-LEVEL + PRE-VARIANT .
   pr META-E-BASIC-UNIFICATION .
   pr VARIANT .
 
@@ -4093,7 +4103,7 @@ fmod META-ACU-UNIFICATION is
   pr SUBSTITUTIONSET .
   pr UNIFICATIONPAIRSET .
   pr CONVERSION .
-  pr META-LEVEL .
+  pr META-LEVEL + PRE-VARIANT .
   pr META-MINIMIZE-BINDINGS .
   pr META-E-UNIFICATION .
 
@@ -4255,7 +4265,7 @@ fmod ORDERS-TERM-SUBSTITUTION is
   protecting TERM-HANDLING .
   protecting SUBSTITUTION-HANDLING .
   protecting META-MATCH .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting META-UNIFICATION .
   protecting META-E-UNIFICATION .
   protecting RENAMING .
@@ -4526,7 +4536,7 @@ fmod ORDERS-TERM-SUBSTITUTION is
 endfm
 fmod META-NORMALIZE is
   protecting META-TERM .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting META-UNIFICATION .
   protecting RESULT-CONTEXT-SET .
   protecting ORDERS-TERM-SUBSTITUTION .
@@ -4747,7 +4757,7 @@ endfm
 
 fmod META-E-NARROWING is
   protecting META-TERM .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting META-UNIFICATION .
   protecting META-MSG-UNIFICATION .
   protecting META-E-UNIFICATION .
@@ -5367,7 +5377,7 @@ endfm
 fmod META-NARROWING-SEARCH is
   protecting META-E-NARROWING .
   protecting META-TERM .
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting META-UNIFICATION .
   protecting RESULT-CONTEXT-SET .
   protecting ORDERS-TERM-SUBSTITUTION .
@@ -6138,7 +6148,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod PRINT-SYNTAX-ERROR is
-  protecting META-LEVEL .
+  protecting META-LEVEL + PRE-VARIANT .
   protecting INT .
 
   var  QIL : QidList .
@@ -6426,7 +6436,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod EXT-SORT is
-  pr META-LEVEL .
+  pr META-LEVEL + PRE-VARIANT .
   pr EXT-BOOL .
   pr VIEW-EXPR-TO-QID .
   pr EXT-QID-LIST .
@@ -6811,7 +6821,7 @@ fmod EXT-DECL is
   var  MbS : MembAxSet .
   var  M : Module .
 
-  op variant : -> Attr [ctor] .
+----  op variant : -> Attr [ctor] . ---- PD: pre alpha96
 
 *** subsort declarations error
   op subsortDeclError : QidList -> [SubsortDeclSet] [ctor format (r o)] .
@@ -6821,7 +6831,7 @@ fmod EXT-DECL is
 *** extended attribute declarations 
   op strat : IntList -> Attr [ditto] .   *** to handle on-demand strategies
   op ditto : -> Attr [ctor] .
-
+  
   op _in_ : Attr AttrSet -> Bool .
   eq At in At AtS = true .
   eq At in AtS = false [owise] .
@@ -6902,7 +6912,7 @@ endfm
 **** get a copy of a term in which all the variables in it have been renamed.
 
 fmod EXT-TERM is
-  pr META-LEVEL .
+  pr META-LEVEL + PRE-VARIANT .
   pr EXT-BOOL .
   pr EXT-DECL .
 
@@ -7387,7 +7397,7 @@ fmod UNIT is
   pr EXT-DECL .
   pr O-O-DECL .
   pr MOD-NAME-TO-QID .
-  inc META-LEVEL .
+  inc META-LEVEL + PRE-VARIANT .
 
   op moduleName : Import -> ModuleName .
   eq moduleName(protecting MN .) = MN .
@@ -8213,16 +8223,16 @@ fmod UNIT is
   op $rmVariants : MembAxSet -> MembAxSet .
   eq rmVariantAttrs(M) = setRls(setEqs(setMbs(M, $rmVariants(getMbs(M))), $rmVariants(getEqs(M))), $rmVariants(getRls(M))) .
   
-  eq $rmVariants(eq T = T' [variant AtS] . EqS) = (eq T = T' [metadata("variant") AtS] .) $rmVariants(EqS) .
-  eq $rmVariants(ceq T = T' if Cond [variant AtS] . EqS) = (ceq T = T' if Cond [metadata("variant") AtS] .) $rmVariants(EqS) .
+  eq $rmVariants(eq T = T' [variant AtS] . EqS) = (eq T = T' [variant AtS] .) $rmVariants(EqS) .
+  eq $rmVariants(ceq T = T' if Cond [variant AtS] . EqS) = (ceq T = T' if Cond [variant AtS] .) $rmVariants(EqS) .
   eq $rmVariants(EqS) = EqS [owise] .
   
-  eq $rmVariants(rl T => T' [variant AtS] . RlS) = (rl T => T' [metadata("variant") AtS] .) $rmVariants(RlS) .
-  eq $rmVariants(crl T => T' if Cond [variant AtS] . RlS) = (crl T => T' if Cond [metadata("variant") AtS] .) $rmVariants(RlS) .
+  eq $rmVariants(rl T => T' [variant AtS] . RlS) = (rl T => T' [variant AtS] .) $rmVariants(RlS) .
+  eq $rmVariants(crl T => T' if Cond [variant AtS] . RlS) = (crl T => T' if Cond [variant AtS] .) $rmVariants(RlS) .
   eq $rmVariants(RlS) = RlS [owise] .
   
-  eq $rmVariants(mb T : S [variant AtS] . MbS) = (mb T : S [metadata("variant") AtS] .) $rmVariants(MbS) .
-  eq $rmVariants(cmb T : S if Cond [variant AtS] . MbS) = (cmb T : S if Cond [metadata("variant") AtS] .) $rmVariants(MbS) .
+  eq $rmVariants(mb T : S [variant AtS] . MbS) = (mb T : S [variant AtS] .) $rmVariants(MbS) .
+  eq $rmVariants(cmb T : S if Cond [variant AtS] . MbS) = (cmb T : S if Cond [variant AtS] .) $rmVariants(MbS) .
   eq $rmVariants(MbS) = MbS [owise] .
 endfm
 
@@ -8265,7 +8275,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod META-FULL-MAUDE-SIGN is
-  including META-LEVEL .
+  including META-LEVEL + PRE-VARIANT .
   including UNIT .
 
   op BUBBLES : -> FModule .
@@ -9679,7 +9689,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod MOVE-UP is
-  pr META-LEVEL .  
+  pr META-LEVEL + PRE-VARIANT .  
   pr CONVERSION .
   op up : Module -> Term .
   op up : Term -> Term .
@@ -19207,6 +19217,11 @@ view SubstitutionSet from TRIV to SUBSTITUTIONSET is
   sort Elt to SubstitutionSet .
 endv
 
+---- view Variant from TRIV to META-LEVEL is ---- PD: pre alpha96
+view Variant from TRIV to META-LEVEL + PRE-VARIANT is
+  sort Elt to Variant . 
+endv
+
 fmod MODULE-VARIANTS is 
   inc CHECK-INPUT-MODULE .
   inc META-NARROWING-SEARCH * (op addOps to addOpsSE, op addEqs to addEqsSE, op addSorts to addSortsSE) .
@@ -19220,6 +19235,7 @@ fmod MODULE-VARIANTS is
   pr EXT-DECL .
   pr 2TUPLE{Module,Module}
       * (op `(_`,_`) : Module Module -> Tuple{Module, Module} to <_;_>) .
+  pr SET{Variant} .
   
   vars V W : Variable .
   var  C : Constant .
@@ -19230,6 +19246,7 @@ fmod MODULE-VARIANTS is
   var  TL : TermList .
   var  AtS : AttrSet .
   var  VFS : VariantFourSet .
+  var  VtS : Set{Variant} .
   vars Tp Tp' Tp'' : Type .
   var  TpL : TypeList .
   var  Rl : Rule .
@@ -19271,8 +19288,8 @@ fmod MODULE-VARIANTS is
   ------------------------------------------------------------------------------
   
   sort VariantProcedure .
-  ops narrowing ad-hoc : -> VariantProcedure .
-  var  VP : VariantProcedure .
+  ops narrowing ad-hoc built-in : -> VariantProcedure .
+  var VP : VariantProcedure .
   sort IdsToRemove .
   ops all non-handled : -> IdsToRemove .
   var Which : IdsToRemove .  
@@ -19289,12 +19306,12 @@ fmod MODULE-VARIANTS is
   op getVariants : Module Module EquationSet VariantProcedure -> EquationSet .
   ---- given a (\widehat{\Sigma}, B, \widetilde{U}) returns the variants of the given set of equations
   ---- It takes the modules without and with ids. The module with id attributes is used to normalize.
-  op getVariants : Module Module Term VariantProcedure -> VariantFourSet .
+  op getVariants# : Module Module Term VariantProcedure -> Set{Variant} .
   ---- given a (\widehat{\Sigma}, B, \widetilde{U}) returns the variants of a term (a tuple)
-  op getRlVariants : Module VariantFourSet Term Condition AttrSet -> RuleSet .
+  op getRlVariants : Module Set{Variant} Term Condition AttrSet -> RuleSet .
   ---- given the variants of a tuple < LHS, target terms in condition >, a RHS, a condition, and an attribute set,
   ---- it constructs the corresponding variant rules
-  op getEqVariants : Module VariantFourSet Term Condition AttrSet -> EquationSet .
+  op getEqVariants : Module Set{Variant} Term Condition AttrSet -> EquationSet .
   ---- given the variants of a tuple < LHS, target terms in condition >, a RHS, a condition, and an attribute set,
   ---- it constructs the corresponding variant equations
   
@@ -19324,31 +19341,45 @@ fmod MODULE-VARIANTS is
         getVariants(makeIdsTuplingModule(M, Which), addTupling(M, M), getRls(M), VP)) .
   
   eq getVariants(M, M', Rl RlS, VP) 
-    = getRlVariants(M', getVariants(M, M', makeTuple(lhs(Rl), cond(Rl)), VP), rhs(Rl), cond(Rl), atts(Rl)) 
+    = getRlVariants(M', getVariants#(M, M', makeTuple(lhs(Rl), cond(Rl)), VP), rhs(Rl), cond(Rl), atts(Rl)) 
       getVariants(M, M', RlS, VP) .
   eq getVariants(M, M', (none).RuleSet, VP) = none .
     
   eq getVariants(M, M', Eq EqS, VP) 
-    = getEqVariants(M', getVariants(M, M', makeTuple(lhs(Eq), cond(Eq)), VP), rhs(Eq), cond(Eq), atts(Eq)) 
+    = getEqVariants(M', getVariants#(M, M', makeTuple(lhs(Eq), cond(Eq)), VP), rhs(Eq), cond(Eq), atts(Eq)) 
       getVariants(M, M', EqS, VP) .
   eq getVariants(M, M', (none).EquationSet, VP) = none .
     
-  eq getVariants(M, M', T, narrowing) = getVariants(M, T, 1, irreducible ACUUnify) .
+  eq getVariants#(M, M', T, narrowing) = makeVariantSet(getVariants(M, T, 1, irreducible ACUUnify minimal-unifiers)) .
   
-  eq getRlVariants(M, {'<_>[T], Subst, Subst', N} | VFS, T', nil, AtS)
+  op makeVariantSet : VariantFourSet -> Set{Variant} .
+  eq makeVariantSet({T, Subst, Subst', N} | VFS) = {Subst, T, N}, makeVariantSet(VFS) .
+  eq makeVariantSet(empty) = empty .
+  
+---- PD: pre alpha96
+----  eq getVariants#(M, M', T, built-in) = getVariants#(M, T, 0) .
+----
+----  op getVariants# : Module Term Nat -> Set{Variant} .  
+----  eq getVariants#(M, T, N) 
+----    = if metaGenerateVariant(M, T, 0, N) == noVariant
+----      then empty
+----      else metaGenerateVariant(M, T, 0, N), getVariants#(M, T, s N)
+----      fi .
+  
+  eq getRlVariants(M, ({Subst, '<_>[T], N}, VtS), T', nil, AtS)
     = (rl getTerm(metaNormalize(M, T)) => getTerm(metaNormalize(M, _<<_(T', Subst))) [AtS] .)
-      getRlVariants(M, VFS, T', nil, AtS) .
-  eq getRlVariants(M, {F[T, TL], Subst, Subst', N} | VFS, T', Cond, AtS)
+      getRlVariants(M, VtS, T', nil, AtS) .
+  eq getRlVariants(M, ({Subst, F[T, TL], N}, VtS), T', Cond, AtS)
     = (crl getTerm(metaNormalize(M, T)) => getTerm(metaNormalize(M, _<<_(T', Subst))) if makeCond(TL, Cond, Subst) [AtS] .)
-      getRlVariants(M, VFS, T', Cond, AtS) .
+      getRlVariants(M, VtS, T', Cond, AtS) .
   eq getRlVariants(M, empty, T', Cond, AtS) = none .
 
-  eq getEqVariants(M, {'<_>[T], Subst, Subst', N} | VFS, T', nil, AtS)
+  eq getEqVariants(M, ({Subst, '<_>[T], N}, VtS), T', nil, AtS)
     = (eq getTerm(metaNormalize(M, T)) = getTerm(metaNormalize(M, _<<_(T', Subst))) [AtS] .)
-      getEqVariants(M, VFS, T', nil, AtS) .
-  eq getEqVariants(M, {F[T, TL], Subst, Subst', N} | VFS, T', Cond, AtS)
+      getEqVariants(M, VtS, T', nil, AtS) .
+  eq getEqVariants(M, ({Subst, F[T, TL], N}, VtS), T', Cond, AtS)
     = (ceq getTerm(metaNormalize(M, T)) = getTerm(metaNormalize(M, _<<_(T', Subst))) if makeCond(TL, Cond, Subst) [AtS] .)
-      getEqVariants(M, VFS, T', Cond, AtS) .
+      getEqVariants(M, VtS, T', Cond, AtS) .
   eq getEqVariants(M, empty, T', Cond, AtS) = none .
 
   ------------------------------------------------------------------------------
@@ -19403,36 +19434,36 @@ fmod MODULE-VARIANTS is
   op idEqs : Module OpDeclSet IdsToRemove -> EquationSet .
   ---- the 3rd arguments indicates whether all the id attributes are to be removed (all), or only those not handled by the Maude unification algorithm (non-handled)
   eq idEqs(M, op F : Tp Tp' -> Tp'' [left-id(T) AtS] . ODS, Which)
-    = (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('lIdEq1) 
+    = (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('lIdEq1) 
       if assoc in AtS and not comm in AtS 
       then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [metadata("variant")] .) ---- label('lIdEq2) 
+              [variant] .) ---- label('lIdEq2) 
       else none 
       fi
       idEqs(M, ODS, Which) . 
   eq idEqs(M, op F : Tp Tp' -> Tp'' [right-id(T) AtS] . ODS, Which)
-    = (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('rIdEq1) 
+    = (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('rIdEq1) 
       if assoc in AtS and not comm in AtS 
       then (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [metadata("variant")] .) ---- label('rIdEq2) 
+              [variant] .) ---- label('rIdEq2) 
       else none 
       fi
       idEqs(M, ODS, Which) . 
   eq idEqs(M, op F : Tp Tp' -> Tp'' [id(T) AtS] . ODS, all)
     = if comm in AtS
-      then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq1) 
-      else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq2) 
-           (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq3) 
+      then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq1) 
+      else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq2) 
+           (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq3) 
       fi 
       if assoc in AtS and not comm in AtS 
       then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [metadata("variant")] .)
+              [variant] .)
            (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [metadata("variant")] .)
+              [variant] .)
       else none 
       fi
       idEqs(M, ODS, all) . 
@@ -19442,17 +19473,17 @@ fmod MODULE-VARIANTS is
     = if assoc in AtS and comm in AtS 
       then none 
       else if comm in AtS
-           then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq1) 
-           else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq2) 
-                (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq3) 
+           then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq1) 
+           else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq2) 
+                (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq3) 
            fi 
            if assoc in AtS and not comm in AtS 
            then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
                    = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-                   [metadata("variant")] .)
+                   [variant] .)
                 (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
                    = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-                   [metadata("variant")] .)
+                   [variant] .)
            else none 
            fi
       fi
@@ -19508,17 +19539,17 @@ fmod MODULE-VARIANTS is
   ---- See Th. 2, FroCos'09
   ---- TO DO: it doesn't give the minimal set of variants
   
-  op getVariants : Module Term SubstitutionSet -> VariantFourSet .
+  op getVariants : Module Term SubstitutionSet -> Set{Variant} .
   op getSubstitutions : Module QidSet OpDeclSet Nat -> Tuple{SubstitutionSet,Nat} .
   op getSubstitutions1 : Module Variable OpDeclSet Nat -> Tuple{SubstitutionSet,Nat} .
   op combineSubsts : SubstitutionSet SubstitutionSet -> SubstitutionSet .
   
-  eq getVariants(M, M', T, ad-hoc) 
+  eq getVariants#(M, M', T, ad-hoc) 
     = getVariants(M', T, getSubst(getSubstitutions(M', vars(T), getOps(M'), 0))) .
 
   eq getVariants(M, T, Subst | SubstS)
-    = {getTerm(metaNormalize(M, T << Subst)), Subst, none, 0} | getVariants(M, T, SubstS) .
-  eq getVariants(M, T, empty) = {T, none, none, 0} .
+    = {Subst, getTerm(metaNormalize(M, T << Subst)), 0}, getVariants(M, T, SubstS) .
+  eq getVariants(M, T, empty) = {none, T, 0} .
   
   eq getSubstitutions(M, V ; VS, ODS, N)
     = < combineSubsts(
@@ -19604,7 +19635,7 @@ fmod MODULE-VARIANTS is
   eq removeLonelyAssocs(M) 
     = if $anyLonelyAssoc(getOps(M))
       then if nonValidAttrs(getOps(M), owise idem iter)
-                then unitError('The 'module 'uses 'non-supported 'attributes '`(owise`, 'idem`, 'or 'iter '`). '`))
+           then unitError('The 'module 'uses 'non-supported 'attributes '`(owise`, 'idem`, 'or 'iter '`). '`))
            else if singleVbleInLHSs(getRls(M))
                 then unitError('The 'module 'contains 'rules 'with 'single 'variables 'in 'their 'left-hand 'sides. '`))
                 else if singleVbleInLHSs(getEqs(M))
@@ -19974,7 +20005,7 @@ endfm
 
 
 mod DATABASE-HANDLING is
-  inc META-LEVEL .
+  inc META-LEVEL + PRE-VARIANT .
   inc CONFIGURATION .
   pr VIEW-META-PRETTY-PRINT .
   pr VIEW-PROCESSING .
@@ -20530,14 +20561,14 @@ mod DATABASE-HANDLING is
        input : ('remove`identity`attributes`..@Command@), 
        output : nil, default : ME, Atts >
     => < O : X@DatabaseClass | db : DB', input : nilTermList, 
-          output : (eMetaPrettyPrint(getFlatModule(ME', DB'), removeIds(getFlatModule(ME', DB'), all))),
+          output : (eMetaPrettyPrint(getFlatModule(ME', DB'), removeIds(acuCohComplete(getFlatModule(ME', DB')), all))),
           default : ME', Atts > 
     if < DB' ; ME' > := evalModExp(ME, DB) .
   crl [remove-id-attributes] :
     < O : X@DatabaseClass | db : DB, input : ('remove`identity`attributes_.[T]), output : nil, default : ME,   Atts >
     => < O : X@DatabaseClass | 
           db : DB', input : nilTermList, 
-          output : (eMetaPrettyPrint(getFlatModule(ME'', DB'), removeIds(getFlatModule(ME'', DB'), all))),
+          output : (eMetaPrettyPrint(getFlatModule(ME'', DB'), removeIds(acuCohComplete(getFlatModule(ME'', DB')), all))),
           default : ME, Atts > 
     if < DB' ; ME'' > := evalModExp(parseModExp(T), DB) .
 
@@ -20627,7 +20658,7 @@ endm
 
 *******************************************************************************
 fmod TEXT-STYLE is
- pr META-LEVEL .
+ pr META-LEVEL + PRE-VARIANT .
 
  var QL : QidList .
 

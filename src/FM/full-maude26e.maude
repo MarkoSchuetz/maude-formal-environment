@@ -34,14 +34,6 @@ endfm
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 )
 
-  ---- PD: pre alpha96
-fmod PRE-VARIANT is 
-  including META-LEVEL .
-  sort Variant .
-  op variant : -> Attr . 
-  op {_,_,_} : Substitution Term Nat -> Variant [ctor] .
-endfm
-
 ---- to do:
 ---- - commands remove ids and remove non-handled ids
 ---- - continue .
@@ -344,7 +336,7 @@ set include TRUTH-VALUE off .
 *** by Santiago Escobar
 ***
 fmod UNIFICATIONTRIPLE is
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting INT .
 
   --- UnificationPair --------------------------------------------
@@ -375,7 +367,7 @@ endfm
 
 fmod TERM-HANDLING is
   protecting META-TERM .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting EXT-BOOL . *** For and-then
 
   var T T' T'' : Term .
@@ -554,7 +546,7 @@ endfm
 
 fmod SUBSTITUTION-HANDLING is
   protecting META-TERM .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting TERM-HANDLING .
 
   var S S' Subst Subst' : Substitution .
@@ -712,7 +704,7 @@ fmod SUBSTITUTION-HANDLING is
 endfm
 
 fmod TERMSET is
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting SUBSTITUTION-HANDLING .
 
   sort TermSet .
@@ -736,7 +728,7 @@ endfm
 
 fmod RENAMING is
   protecting META-TERM .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting TERM-HANDLING .
   protecting SUBSTITUTION-HANDLING .
   protecting TERMSET .
@@ -888,7 +880,7 @@ endfm
 
 fmod SUBSTITUTIONSET is
   protecting SUBSTITUTION-HANDLING .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting TERMSET .
   protecting RENAMING .
 
@@ -1212,7 +1204,7 @@ endfm
 
 fmod MODULE-HANDLING is
   protecting INT .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting EXT-BOOL . *** From Full Maude
   protecting SUBSTITUTION-HANDLING .
   protecting UNIFICATIONTRIPLESET .
@@ -2614,7 +2606,7 @@ fmod META-MINIMIZE-BINDINGS is
   pr SUBSTITUTIONSET .
   pr UNIFICATIONTRIPLESET .
   pr CONVERSION .
-  pr META-LEVEL + PRE-VARIANT .
+  pr META-LEVEL .
 
   vars M : Module .
   vars T T' T1 T2 T3 : Term .
@@ -2796,7 +2788,7 @@ endfm
 
 fmod RESULT-CONTEXT-SET is
   protecting META-TERM .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting TERM-HANDLING .
   protecting SUBSTITUTION-HANDLING .
   protecting RENAMING .
@@ -2970,7 +2962,7 @@ fmod META-MATCH is
   protecting TERM-HANDLING .
   protecting MODULE-HANDLING .
   protecting SUBSTITUTION-HANDLING .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting RENAMING .
   protecting SUBSTITUTIONSET .
 
@@ -3035,7 +3027,7 @@ fmod VARIANT is
   pr META-MINIMIZE-BINDINGS .
   pr RESULT-CONTEXT-SET .
   pr MODULE-HANDLING .
-  pr META-LEVEL + PRE-VARIANT .
+  pr META-LEVEL .
 
   var M : Module .
   vars T T' TS TS' CtTS CtTS' Lhs Rhs : Term .
@@ -3351,7 +3343,7 @@ fmod META-E-BASIC-UNIFICATION is
   pr META-MINIMIZE-BINDINGS .
   pr RESULT-CONTEXT-SET .
   pr MODULE-HANDLING .
-  pr META-LEVEL + PRE-VARIANT .
+  pr META-LEVEL .
   pr RIGIDIFE .
 
   *** Repeated definitions to avoid cross calls between modules ************
@@ -3445,7 +3437,7 @@ fmod META-E-UNIFICATION is
   pr META-MINIMIZE-BINDINGS .
   pr RESULT-CONTEXT-SET .
   pr MODULE-HANDLING .
-  pr META-LEVEL + PRE-VARIANT .
+  pr META-LEVEL .
   pr META-E-BASIC-UNIFICATION .
   pr VARIANT .
 
@@ -4103,7 +4095,7 @@ fmod META-ACU-UNIFICATION is
   pr SUBSTITUTIONSET .
   pr UNIFICATIONPAIRSET .
   pr CONVERSION .
-  pr META-LEVEL + PRE-VARIANT .
+  pr META-LEVEL .
   pr META-MINIMIZE-BINDINGS .
   pr META-E-UNIFICATION .
 
@@ -4265,7 +4257,7 @@ fmod ORDERS-TERM-SUBSTITUTION is
   protecting TERM-HANDLING .
   protecting SUBSTITUTION-HANDLING .
   protecting META-MATCH .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting META-UNIFICATION .
   protecting META-E-UNIFICATION .
   protecting RENAMING .
@@ -4536,7 +4528,7 @@ fmod ORDERS-TERM-SUBSTITUTION is
 endfm
 fmod META-NORMALIZE is
   protecting META-TERM .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting META-UNIFICATION .
   protecting RESULT-CONTEXT-SET .
   protecting ORDERS-TERM-SUBSTITUTION .
@@ -4757,7 +4749,7 @@ endfm
 
 fmod META-E-NARROWING is
   protecting META-TERM .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting META-UNIFICATION .
   protecting META-MSG-UNIFICATION .
   protecting META-E-UNIFICATION .
@@ -5377,7 +5369,7 @@ endfm
 fmod META-NARROWING-SEARCH is
   protecting META-E-NARROWING .
   protecting META-TERM .
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting META-UNIFICATION .
   protecting RESULT-CONTEXT-SET .
   protecting ORDERS-TERM-SUBSTITUTION .
@@ -6148,7 +6140,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod PRINT-SYNTAX-ERROR is
-  protecting META-LEVEL + PRE-VARIANT .
+  protecting META-LEVEL .
   protecting INT .
 
   var  QIL : QidList .
@@ -6436,7 +6428,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod EXT-SORT is
-  pr META-LEVEL + PRE-VARIANT .
+  pr META-LEVEL .
   pr EXT-BOOL .
   pr VIEW-EXPR-TO-QID .
   pr EXT-QID-LIST .
@@ -6821,7 +6813,7 @@ fmod EXT-DECL is
   var  MbS : MembAxSet .
   var  M : Module .
 
-  op variant : -> Attr [ctor] .
+----  op variant : -> Attr [ctor] . ---- PD: pre alpha96
 
 *** subsort declarations error
   op subsortDeclError : QidList -> [SubsortDeclSet] [ctor format (r o)] .
@@ -6912,7 +6904,7 @@ endfm
 **** get a copy of a term in which all the variables in it have been renamed.
 
 fmod EXT-TERM is
-  pr META-LEVEL + PRE-VARIANT .
+  pr META-LEVEL .
   pr EXT-BOOL .
   pr EXT-DECL .
 
@@ -7397,7 +7389,7 @@ fmod UNIT is
   pr EXT-DECL .
   pr O-O-DECL .
   pr MOD-NAME-TO-QID .
-  inc META-LEVEL + PRE-VARIANT .
+  inc META-LEVEL .
 
   op moduleName : Import -> ModuleName .
   eq moduleName(protecting MN .) = MN .
@@ -8275,7 +8267,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod META-FULL-MAUDE-SIGN is
-  including META-LEVEL + PRE-VARIANT .
+  including META-LEVEL .
   including UNIT .
 
   op BUBBLES : -> FModule .
@@ -9689,7 +9681,7 @@ endfm
 -------------------------------------------------------------------------------
 
 fmod MOVE-UP is
-  pr META-LEVEL + PRE-VARIANT .  
+  pr META-LEVEL .  
   pr CONVERSION .
   op up : Module -> Term .
   op up : Term -> Term .
@@ -19218,7 +19210,7 @@ view SubstitutionSet from TRIV to SUBSTITUTIONSET is
 endv
 
 ---- view Variant from TRIV to META-LEVEL is ---- PD: pre alpha96
-view Variant from TRIV to META-LEVEL + PRE-VARIANT is
+view Variant from TRIV to META-LEVEL is
   sort Elt to Variant . 
 endv
 
@@ -20005,7 +19997,7 @@ endfm
 
 
 mod DATABASE-HANDLING is
-  inc META-LEVEL + PRE-VARIANT .
+  inc META-LEVEL .
   inc CONFIGURATION .
   pr VIEW-META-PRETTY-PRINT .
   pr VIEW-PROCESSING .
@@ -20658,7 +20650,7 @@ endm
 
 *******************************************************************************
 fmod TEXT-STYLE is
- pr META-LEVEL + PRE-VARIANT .
+ pr META-LEVEL .
 
  var QL : QidList .
 
