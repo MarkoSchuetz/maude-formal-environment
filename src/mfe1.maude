@@ -19,6 +19,8 @@
 ---- Latest changes 
 ---- - July 7th, 2012
 ----   - A basic skeletom for the ERTP has been added. 
+----   - New versions of the different tools integrated, including a new version of Full Maude 
+----     which fixes several bugs. 
 ---- - July 2nd, 2012
 ----   - A new command (which tool .) has been added to the MFE.
 ---- - June 30th, 2012

@@ -1780,7 +1780,7 @@ fmod MODULE-HANDLING is
 
   op getEqsNoVariant : EquationSet -> EquationSet [memo] .
   eq getEqsNoVariant(none) = none .
-  eq getEqsNoVariant((eq Lhs = Rhs [AtS variant] .) EqS)
+  eq getEqsNoVariant((eq Lhs = Rhs [AtS metadata("variant")] .) EqS)
    = getEqsNoVariant(EqS) .
   eq getEqsNoVariant((eq Lhs = Rhs [AtS] .) EqS)
    = (eq Lhs = Rhs [AtS] .) getEqsNoVariant(EqS) 
@@ -1814,8 +1814,8 @@ fmod MODULE-HANDLING is
 
   op getEqsVariant : EquationSet -> EquationSet [memo] .
   eq getEqsVariant(none) = none .
-  eq getEqsVariant((eq Lhs = Rhs [AtS variant] .) EqS)
-   = (eq Lhs = Rhs [AtS variant] .)
+  eq getEqsVariant((eq Lhs = Rhs [AtS metadata("variant")] .) EqS)
+   = (eq Lhs = Rhs [AtS metadata("variant")] .)
      getEqsVariant(EqS) .
   eq getEqsVariant((eq Lhs = Rhs [AtS] .) EqS)
    = getEqsVariant(EqS) 
@@ -1961,8 +1961,8 @@ fmod MODULE-HANDLING is
 
   op getEqsVariant : EquationSet -> EquationSet [memo] .
   eq getEqsVariant(none) = none .
-  eq getEqsVariant((eq Lhs = Rhs [AtS variant] .) EqS)
-   = (eq Lhs = Rhs [AtS variant] .) getEqsVariant(EqS) .
+  eq getEqsVariant((eq Lhs = Rhs [AtS metadata("variant")] .) EqS)
+   = (eq Lhs = Rhs [AtS metadata("variant")] .) getEqsVariant(EqS) .
   eq getEqsVariant((eq Lhs = Rhs [AtS] .) EqS)
    = getEqsVariant(EqS) 
   [owise] .
@@ -8223,16 +8223,16 @@ fmod UNIT is
   op $rmVariants : MembAxSet -> MembAxSet .
   eq rmVariantAttrs(M) = setRls(setEqs(setMbs(M, $rmVariants(getMbs(M))), $rmVariants(getEqs(M))), $rmVariants(getRls(M))) .
   
-  eq $rmVariants(eq T = T' [variant AtS] . EqS) = (eq T = T' [variant AtS] .) $rmVariants(EqS) .
-  eq $rmVariants(ceq T = T' if Cond [variant AtS] . EqS) = (ceq T = T' if Cond [variant AtS] .) $rmVariants(EqS) .
+  eq $rmVariants(eq T = T' [variant AtS] . EqS) = (eq T = T' [metadata("variant") AtS] .) $rmVariants(EqS) .
+  eq $rmVariants(ceq T = T' if Cond [variant AtS] . EqS) = (ceq T = T' if Cond [metadata("variant") AtS] .) $rmVariants(EqS) .
   eq $rmVariants(EqS) = EqS [owise] .
   
-  eq $rmVariants(rl T => T' [variant AtS] . RlS) = (rl T => T' [variant AtS] .) $rmVariants(RlS) .
-  eq $rmVariants(crl T => T' if Cond [variant AtS] . RlS) = (crl T => T' if Cond [variant AtS] .) $rmVariants(RlS) .
+  eq $rmVariants(rl T => T' [variant AtS] . RlS) = (rl T => T' [metadata("variant") AtS] .) $rmVariants(RlS) .
+  eq $rmVariants(crl T => T' if Cond [variant AtS] . RlS) = (crl T => T' if Cond [metadata("variant") AtS] .) $rmVariants(RlS) .
   eq $rmVariants(RlS) = RlS [owise] .
   
-  eq $rmVariants(mb T : S [variant AtS] . MbS) = (mb T : S [variant AtS] .) $rmVariants(MbS) .
-  eq $rmVariants(cmb T : S if Cond [variant AtS] . MbS) = (cmb T : S if Cond [variant AtS] .) $rmVariants(MbS) .
+  eq $rmVariants(mb T : S [variant AtS] . MbS) = (mb T : S [metadata("variant") AtS] .) $rmVariants(MbS) .
+  eq $rmVariants(cmb T : S if Cond [variant AtS] . MbS) = (cmb T : S if Cond [metadata("variant") AtS] .) $rmVariants(MbS) .
   eq $rmVariants(MbS) = MbS [owise] .
 endfm
 
@@ -19434,36 +19434,36 @@ fmod MODULE-VARIANTS is
   op idEqs : Module OpDeclSet IdsToRemove -> EquationSet .
   ---- the 3rd arguments indicates whether all the id attributes are to be removed (all), or only those not handled by the Maude unification algorithm (non-handled)
   eq idEqs(M, op F : Tp Tp' -> Tp'' [left-id(T) AtS] . ODS, Which)
-    = (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('lIdEq1) 
+    = (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('lIdEq1) 
       if assoc in AtS and not comm in AtS 
       then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [variant] .) ---- label('lIdEq2) 
+              [metadata("variant")] .) ---- label('lIdEq2) 
       else none 
       fi
       idEqs(M, ODS, Which) . 
   eq idEqs(M, op F : Tp Tp' -> Tp'' [right-id(T) AtS] . ODS, Which)
-    = (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('rIdEq1) 
+    = (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('rIdEq1) 
       if assoc in AtS and not comm in AtS 
       then (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [variant] .) ---- label('rIdEq2) 
+              [metadata("variant")] .) ---- label('rIdEq2) 
       else none 
       fi
       idEqs(M, ODS, Which) . 
   eq idEqs(M, op F : Tp Tp' -> Tp'' [id(T) AtS] . ODS, all)
     = if comm in AtS
-      then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq1) 
-      else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq2) 
-           (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq3) 
+      then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq1) 
+      else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq2) 
+           (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq3) 
       fi 
       if assoc in AtS and not comm in AtS 
       then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [variant] .)
+              [metadata("variant")] .)
            (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
               = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-              [variant] .)
+              [metadata("variant")] .)
       else none 
       fi
       idEqs(M, ODS, all) . 
@@ -19473,17 +19473,17 @@ fmod MODULE-VARIANTS is
     = if assoc in AtS and comm in AtS 
       then none 
       else if comm in AtS
-           then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq1) 
-           else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq2) 
-                (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [variant] .) ---- label('idEq3) 
+           then (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq1) 
+           else (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), T] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq2) 
+                (eq F[T, qid("X:" + string(type2qid(getKind(M, Tp))))] = qid("X:" + string(type2qid(getKind(M, Tp)))) [metadata("variant")] .) ---- label('idEq3) 
            fi 
            if assoc in AtS and not comm in AtS 
            then (eq F[qid("X:" + string(type2qid(getKind(M, Tp)))), F[T, qid("Y:" + string(type2qid(getKind(M, Tp))))]] 
                    = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-                   [variant] .)
+                   [metadata("variant")] .)
                 (eq F[F[qid("X:" + string(type2qid(getKind(M, Tp)))), T], qid("Y:" + string(type2qid(getKind(M, Tp))))] 
                    = F[qid("X:" + string(type2qid(getKind(M, Tp)))), qid("Y:" + string(type2qid(getKind(M, Tp))))] 
-                   [variant] .)
+                   [metadata("variant")] .)
            else none 
            fi
       fi
