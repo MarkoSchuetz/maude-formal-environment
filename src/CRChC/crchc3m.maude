@@ -28,6 +28,7 @@
 ----   critical pairs and the module resulting from the transformations used.     
 
 ---- Latest changes:
+---- November 27th, 2012: Bug fixed in the nonOverlapping check. Reported by Fan Yang.  
 ---- July 10th, 2011: rewrites in conditions are now supported. Bug reported by 
 ----   Musab Alturki.  
 ---- July 10th, 2011: There was a very subtle bug in the CRC when constructing the  
@@ -1810,9 +1811,9 @@ fmod ChC-NON-OVERLAPPING-CHECK is
   eq nonOverlappingCheck(M, Eq, none, RlS) = ok .
       
   eq nonOverlappingCheckAux(M, Eq, V, Rl RlS)
-    = if nonOverlappingCheck(M, Eq, V, Rl, list2set(eLeastSort(M, specializations(M, lhs(Rl))))) == ok 
+    = if nonOverlappingCheck(M, Eq, V, Rl, eLeastSort(M, specializations(M, lhs(Rl)))) == ok 
       then nonOverlappingCheckAux(M, Eq, V, RlS)
-      else nonOverlappingCheck(M, Eq, V, Rl, list2set(eLeastSort(M, specializations(M, lhs(Rl)))))
+      else nonOverlappingCheck(M, Eq, V, Rl, eLeastSort(M, specializations(M, lhs(Rl))))
       fi .
   eq nonOverlappingCheckAux(M, Eq, VS, none) = ok .
       
@@ -2044,12 +2045,12 @@ mod CRChC-TOOLS is
 
   eq $processChCcheck(M, (Eq, V, Rl))
     = noncoherent(M, 
-        'Rule 
-        if label(Rl) :: Qid then label(Rl) else eMetaPrettyPrint(M, Rl) '\n fi  
+        'Rule '\n
+        if label(Rl) :: Qid then label(Rl) else eMetaPrettyPrint(M, Rl) fi  
         'can 'be 'applied 'under 'the 'non-frozen 'and 'non-linear 'variable 
         V 
-        'of 'equation 
-        if label(Eq) :: Qid then label(Eq) else eMetaPrettyPrint(M, Eq) '\n fi) .
+        'of 'equation '\n
+        if label(Eq) :: Qid then label(Eq) else eMetaPrettyPrint(M, Eq) fi) .
 
   op freezeNonCtors : Module -> Module .
   op $freezeNonCtors : OpDeclSet -> OpDeclSet .
