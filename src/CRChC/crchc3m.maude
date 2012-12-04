@@ -28,7 +28,7 @@
 ----   critical pairs and the module resulting from the transformations used.     
 
 ---- Latest changes:
----- November 27th, 2012: Bug fixed in the nonOverlapping check. Reported by Fan Yang.  
+---- November 26th, 2012: Bug fixed in the nonOverlapping check. Reported by Fan Yang.  
 ---- July 10th, 2011: rewrites in conditions are now supported. Bug reported by 
 ----   Musab Alturki.  
 ---- July 10th, 2011: There was a very subtle bug in the CRC when constructing the  
