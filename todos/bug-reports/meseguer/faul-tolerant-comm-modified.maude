@@ -11,11 +11,15 @@ fmod LIST-NATURAL is
   op s : Natural -> Natural [ctor] .
   op nil : -> List [ctor] .
   op _ _ : Natural NeList -> NeList [ctor] .
-  op _ _ : List List -> List .
+  op _+_ : List List -> List .
   vars L P Q : List .
-  eq L nil = L .
-  eq nil L = L .
-  eq (L P) Q = L (P Q) .
+  var  N : Natural .
+  var NL : NeList .
+  eq L + nil = L .
+  eq nil + L = L .
+  eq (L + P) + Q = L + (P + Q) .
+  eq N + NL = N NL .
+  eq (N NL) + P = N (NL + P) .
 endfm
 
 mod FT-COMM is protecting LIST-NATURAL .
