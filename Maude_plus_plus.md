@@ -1,0 +1,3 @@
+For tools which depend on external utilities not directly available from Maude such as MTT and SCC, we have extended version 2.6 of of the Maude system with built-in operators associated with appropriate C++ code that interacts with the external tools. This extension of Maude, called here `Maude++`  is available **only for Linux architectures**.
+
+However, the MFE can also be executed in any version of Maude 2.6 or higher, but without support for the decision procedures implemented for the aforementioned tools.
